@@ -48,16 +48,15 @@ def autodetect_port() -> Optional[str]:
 
 
 def open_sender(port: str, baud: int = BAUD) -> dict:
-    """打开串口；如果没有 pyserial，就使用系统命令兜底。"""
+    """使用 pyserial 打开串口。"""
     sender = {"port": port, "baud": baud, "serial": None}
     try:
         import serial  # type: ignore
+    except ImportError as exc:
+        raise RuntimeError("pyserial is required. Run: uv sync") from exc
 
-        sender["serial"] = serial.Serial(port, baudrate=baud, timeout=0, write_timeout=0.2)
-        time.sleep(1.0)
-    except Exception:
-        if platform.system().lower() != "windows":
-            subprocess.run(["stty", "-f", port, str(baud), "cs8", "-cstopb", "-parenb"], check=False)
+    sender["serial"] = serial.Serial(port, baudrate=baud, timeout=0, write_timeout=0.2)
+    time.sleep(1.0)
     return sender
 
 
@@ -72,20 +71,7 @@ def send_command(sender: dict, command: str) -> None:
         serial_handle.flush()
         return
 
-    port = sender["port"]
-    baud = sender["baud"]
-    if platform.system().lower() == "windows":
-        ps = (
-            "$p = New-Object System.IO.Ports.SerialPort "
-            f"'{port}',{baud},'None',8,'one'; "
-            "$p.Open(); "
-            f"$p.WriteLine('{command}'); "
-            "$p.Close()"
-        )
-        subprocess.run(["powershell", "-NoProfile", "-Command", ps], check=False)
-    else:
-        with open(port, "wb", buffering=0) as handle:
-            handle.write(line)
+    raise RuntimeError("Serial port is not open. Commands can only be sent through pyserial.")
 
 
 def close_sender(sender: dict) -> None:
@@ -93,4 +79,3 @@ def close_sender(sender: dict) -> None:
     serial_handle = sender.get("serial")
     if serial_handle is not None:
         serial_handle.close()
-

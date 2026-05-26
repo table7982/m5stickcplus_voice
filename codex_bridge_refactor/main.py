@@ -26,7 +26,11 @@ def run(args: argparse.Namespace) -> int:
         if not port:
             print("No serial port found. Pass --port COM5 or --port /dev/cu.usbserial-xxxx.", file=sys.stderr)
             return 2
-        sender = open_sender(port, BAUD)
+        try:
+            sender = open_sender(port, BAUD)
+        except Exception as exc:
+            print(f"Failed to open serial port {port}: {exc}", file=sys.stderr)
+            return 1
 
     try:
         if args.send:
@@ -34,7 +38,11 @@ def run(args: argparse.Namespace) -> int:
                 print(f"debug send: {args.send.strip().upper()}")
                 return 0
             command = args.send.strip().upper()
-            send_command(sender, command)
+            try:
+                send_command(sender, command)
+            except Exception as exc:
+                print(f"Failed to send {command}: {exc}", file=sys.stderr)
+                return 1
             print(f"Sent {command} to {port}")
             return 0
 

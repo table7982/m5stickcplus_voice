@@ -205,6 +205,37 @@ M5.Lcd.fillScreen(BLACK);
 
 当前桌宠程序使用的是 `TFT_eSprite` 方案。
 
+## Python 串口桥接环境（uv）
+
+本项目的 Python 依赖使用 `uv` 管理，`pyserial` 已写在 `pyproject.toml` 中。
+
+首次进入项目后同步环境：
+
+```bash
+uv sync
+```
+
+之后用 `uv run` 运行串口桥接脚本：
+
+```bash
+uv run python codex_bridge_refactor/main.py --debug
+```
+
+连接开发板后，可以自动识别串口：
+
+```bash
+uv run python codex_bridge_refactor/main.py
+```
+
+也可以手动指定端口并发送测试命令：
+
+```bash
+uv run python codex_bridge_refactor/main.py --port COM5 --send BEEP
+uv run python codex_bridge_refactor/main.py --port /dev/cu.usbserial-0001 --send BEEP
+```
+
+串口发送只使用 `pyserial`。如果没有同步 uv 环境，或者指定的端口不能被 `pyserial` 打开，程序会直接报错退出，不会再通过系统命令或文件写入方式兜底发送。
+
 ### 5. BEEP 命令收到但没有声音
 
 现象：

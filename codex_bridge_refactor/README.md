@@ -49,10 +49,16 @@ codex_bridge_refactor/runtime/m5_hook_debug.log
 
 ## 调试
 
+首次使用先在项目根目录同步 Python 环境：
+
+```bash
+uv sync
+```
+
 不接开发板时，用 debug 模式：
 
 ```bash
-python3 codex_bridge_refactor/main.py --debug
+uv run python codex_bridge_refactor/main.py --debug
 ```
 
 保持它运行，然后触发一次 Codex 工具调用。正常会看到：
@@ -68,22 +74,24 @@ serial command=TYPE debug=true
 自动识别串口：
 
 ```bash
-python3 codex_bridge_refactor/main.py
+uv run python codex_bridge_refactor/main.py
 ```
 
 手动指定串口：
 
 ```bash
-python3 codex_bridge_refactor/main.py --port /dev/cu.usbserial-0001 --source codex
-python3 codex_bridge_refactor/main.py --port COM5 --source codex
+uv run python codex_bridge_refactor/main.py --port /dev/cu.usbserial-0001 --source codex
+uv run python codex_bridge_refactor/main.py --port COM5 --source codex
 ```
 
 手动发送命令测试：
 
 ```bash
-python3 codex_bridge_refactor/main.py --port COM5 --send BEEP
-python3 codex_bridge_refactor/main.py --port COM5 --send THINK
+uv run python codex_bridge_refactor/main.py --port COM5 --send BEEP
+uv run python codex_bridge_refactor/main.py --port COM5 --send THINK
 ```
+
+串口发送只使用 `pyserial`。如果 `uv sync` 没有安装好依赖，或者端口名不正确，程序会直接报错退出，不会通过 `stty`、PowerShell 或普通文件写入兜底发送。
 
 ## 事件映射
 

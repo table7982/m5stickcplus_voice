@@ -30,6 +30,7 @@ claude_bot_pet/cloudling_frames.h
 
 - 参考 `clawd-on-desk` 里的 Cloudling / Codex GIF 素材，抽帧、去绿色背景、裁剪后缩放成 96x96 小屏帧。
 - 程序播放时按 2x 放大到 192x192，并按屏幕中心裁切；由于 M5StickC Plus 屏幕只有 240x135，纵向会主动裁切一部分，让主体尽量大。
+- 同时监听 USB 串口和蓝牙 SPP 虚拟串口命令，蓝牙设备名为 `M5StickCPlus-Bot`。
 - `BtnA` 切到下一个状态。
 - `BtnB` 切到上一个状态。
 - 状态包括：
@@ -232,6 +233,13 @@ uv run python codex_bridge_refactor/main.py
 ```bash
 uv run python codex_bridge_refactor/main.py --port COM5 --send BEEP
 uv run python codex_bridge_refactor/main.py --port /dev/cu.usbserial-0001 --send BEEP
+```
+
+使用蓝牙发送时，先在系统蓝牙设置里配对 `M5StickCPlus-Bot`，再使用系统生成的蓝牙 SPP 串口：
+
+```bash
+uv run python codex_bridge_refactor/main.py --transport bluetooth --port COM7 --send BEEP
+uv run python codex_bridge_refactor/main.py --transport bluetooth --port /dev/cu.M5StickCPlus-Bot --send BEEP
 ```
 
 串口发送只使用 `pyserial`。如果没有同步 uv 环境，或者指定的端口不能被 `pyserial` 打开，程序会直接报错退出，不会再通过系统命令或文件写入方式兜底发送。

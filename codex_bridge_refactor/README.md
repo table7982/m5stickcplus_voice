@@ -71,7 +71,7 @@ serial command=TYPE debug=true
 
 ## 连接开发板
 
-自动识别串口：
+默认通过 USB 串口发送。自动识别 USB 串口：
 
 ```bash
 uv run python codex_bridge_refactor/main.py
@@ -89,6 +89,19 @@ uv run python codex_bridge_refactor/main.py --port COM5 --source codex
 ```bash
 uv run python codex_bridge_refactor/main.py --port COM5 --send BEEP
 uv run python codex_bridge_refactor/main.py --port COM5 --send THINK
+```
+
+通过蓝牙发送时，先烧录支持蓝牙的 `claude_bot_pet.ino`，再在系统蓝牙设置里配对 `M5StickCPlus-Bot`。配对后使用系统生成的蓝牙 SPP 串口：
+
+```bash
+uv run python codex_bridge_refactor/main.py --transport bluetooth --port COM7 --send BEEP
+uv run python codex_bridge_refactor/main.py --transport bluetooth --port /dev/cu.M5StickCPlus-Bot --send BEEP
+```
+
+也可以让程序尝试自动识别蓝牙 SPP 串口：
+
+```bash
+uv run python codex_bridge_refactor/main.py --transport bluetooth --send BEEP
 ```
 
 串口发送只使用 `pyserial`。如果 `uv sync` 没有安装好依赖，或者端口名不正确，程序会直接报错退出，不会通过 `stty`、PowerShell 或普通文件写入兜底发送。

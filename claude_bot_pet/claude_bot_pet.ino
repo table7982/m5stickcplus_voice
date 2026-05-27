@@ -1,4 +1,5 @@
 #include <M5StickCPlus.h>
+#include "BluetoothSerial.h"
 #include "utility/Config.h"
 
 #include "cloudling_frames.h"
@@ -12,12 +13,14 @@ static constexpr int FRAME_X = (SCREEN_W - SCALED_FRAME_W) / 2;
 static constexpr int FRAME_Y = (SCREEN_H - SCALED_FRAME_H) / 2;
 
 TFT_eSprite canvas = TFT_eSprite(&M5.Lcd);
+BluetoothSerial SerialBT;
 
 uint8_t currentAnim = 0;
 uint8_t currentFrame = 0;
 uint32_t lastFrameTick = 0;
 bool needsRedraw = true;
 String serialLine;
+String bluetoothLine;
 String lastCommand = "IDLE";
 
 struct BeepStep {
@@ -194,18 +197,26 @@ void applyCommand(String command) {
   }
 }
 
-void handleSerial() {
-  while (Serial.available() > 0) {
-    const char c = (char)Serial.read();
+void handleCommandStream(Stream &stream, String &line) {
+  while (stream.available() > 0) {
+    const char c = (char)stream.read();
     if (c == '\n' || c == '\r') {
-      if (serialLine.length() > 0) {
-        applyCommand(serialLine);
-        serialLine = "";
+      if (line.length() > 0) {
+        applyCommand(line);
+        line = "";
       }
-    } else if (serialLine.length() < 32) {
-      serialLine += c;
+    } else if (line.length() < 32) {
+      line += c;
     }
   }
+}
+
+void handleSerial() {
+  handleCommandStream(Serial, serialLine);
+}
+
+void handleBluetooth() {
+  handleCommandStream(SerialBT, bluetoothLine);
 }
 
 void handleButtons() {
@@ -234,6 +245,7 @@ void updateAnimation() {
 
 void setup() {
   Serial.begin(115200);
+  SerialBT.begin("M5StickCPlus-Bot");
   M5.begin();
   M5.Lcd.setRotation(1);
   M5.Lcd.fillScreen(BLACK);
@@ -248,6 +260,7 @@ void setup() {
 void loop() {
   M5.update();
   handleSerial();
+  handleBluetooth();
   handleButtons();
   updateBeep();
   updateAnimation();
